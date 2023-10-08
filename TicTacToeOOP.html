@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+    <!-- Meta tags for character set and viewport settings -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe</title>
 
+    <!-- Internal CSS styling -->
     <style>
         body {
             margin: 0;
@@ -85,70 +88,120 @@
 </head>
 <body>
 <h1 class="header">TIC-TAC-TOE</h1>
-
-<div id="board">
-</div>
-
+<div id="board"></div>
 <p id="info"></p>
 
+<!-- JavaScript code for game logic -->
 <script>
-    const board = document.querySelector("#board");
-    const info = document.querySelector("#info");
-    const squares = [null, null, null, null, null, null, null, null, null];
+    class TicTacToe {
 
-    function createBoard() {
-        squares.forEach((cell, index) => {
-            const squareElement = document.createElement("div");
-            squareElement.classList.add("square");
-            squareElement.id = index;
-            squareElement.addEventListener("click", addXO);
-            board.append(squareElement);
-
-        })
-
-
-        let add = "circle";
-        info.textContent = "Circle goes first"
-
-        function addXO(e) {
-            const display = document.createElement("div");
-            display.classList.add(add);
-            e.target.append(display);
-
-            add = add === "circle" ? "cross" : "circle";
-            info.textContent = "it is now " + add + "'s turn!"
-            e.target.removeEventListener("click", addXO);
-            score();
+        // Constructor initializes game state
+        constructor() {
+            this.squares = Array(9).fill(null);
+            this.currentPlayer = "circle";
+            this.boardElement = document.querySelector("#board");
+            this.infoElement = document.querySelector("#info");
+            this.initializeBoard();
         }
+
+        // Function to initialize the game board with squares
+        initializeBoard() {
+            this.squares.forEach((cell, index) => {
+                const squareElement = document.createElement("div");
+                squareElement.classList.add("square");
+                squareElement.id = index;
+                squareElement.addEventListener("click", () => this.handleSquareClick(index));
+                this.boardElement.appendChild(squareElement);
+            });
+            this.infoElement.textContent = "Circle goes first";
+        }
+
+        // Event handler for square clicks
+        handleSquareClick(index) {
+            if (this.squares[index] === null) {
+                this.squares[index] = this.currentPlayer;
+                this.renderBoard();
+                this.togglePlayer();
+                this.checkWinner();
+            }
+        }
+
+        // Function to render the game board based on the current state
+        renderBoard() {
+            this.boardElement.innerHTML = "";
+            this.squares.forEach((cell, index) => {
+                const squareElement = document.createElement("div");
+                squareElement.classList.add("square");
+                squareElement.id = index;
+                if (cell) {
+                    const display = document.createElement("div");
+                    display.classList.add(cell);
+                    squareElement.appendChild(display);
+                }
+                squareElement.addEventListener("click", () => this.handleSquareClick(index));
+                this.boardElement.appendChild(squareElement);
+            });
+        }
+
+        // Function to switch the current player
+        togglePlayer() {
+            this.currentPlayer = this.currentPlayer === "circle" ? "cross" : "circle";
+            this.infoElement.textContent = `It is now ${this.currentPlayer}'s turn!`;
+        }
+
+        // Function to check for a winner
+        checkWinner() {
+            const allSquares = document.querySelectorAll(".square")
+
+            // Winning combinations on the Tic-Tac-Toe board
+            const winning = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+            // Check for a draw
+            winning.forEach(array => {
+                let XODraw = Array.from(allSquares).every(square => square.firstChild !== null)
+                if (XODraw) {
+                    this.infoElement.textContent = "Draw!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    this.resetBoard()
+                }
+            })
+
+            // Check for a wins
+            winning.forEach(array => {
+
+                let OWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("circle"))
+                let XWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("cross"))
+
+                // Handle X's win
+                if (XWins) {
+                    this.infoElement.textContent = "Cross Wins!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    this.resetBoard()
+
+                    // Handle O's win
+                } else if (OWins) {
+                    this.infoElement.textContent = "Circle Wins!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    this.resetBoard()
+                }
+            })
+        }
+
+        // Function to reset the board and switch player after a delay
+        resetBoard() {
+            setTimeout(() => {
+                this.squares = Array(9).fill(null);
+                this.currentPlayer = "circle";
+                this.renderBoard();
+                this.infoElement.textContent = "Circle goes first";
+            }, 3000);
+        }
+
     }
 
-    function score() {
-        const allSquares = document.querySelectorAll(".square")
-
-        const winning = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
-
-        winning.forEach(array => {
-            let OWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("circle"))
-            let XWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("cross"))
-
-            if (XWins) {
-                info.textContent = "Cross Wins!"
-                allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
-                return
-            }
-            if (OWins) {
-                info.textContent = "Circle Wins!"
-                allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
-                return
-            }
-
-        })
-    }
-
-    createBoard();
-
+    //Initializes the game through the constructor
+    const game = new TicTacToe();
 </script>
 </body>
-
 </html>

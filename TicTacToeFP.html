@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <!-- Meta tags for character set and viewport settings -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe</title>
+
+    <!-- Internal CSS styling -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 60px;
+            text-align: center;
+            background: #FF2F00CC;
+            color: white;
+            font-size: 30px;
+        }
+
+        .square {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: solid 2px black;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #board {
+            width: 300px;
+            height: 300px;
+            background-color: black;
+            display: flex;
+            flex-wrap: wrap;
+            border: solid 1px black;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle {
+            height: 90px;
+            width: 90px;
+            border-radius: 50%;
+            border: 15px solid red;
+            box-sizing: border-box;
+        }
+
+        .cross {
+            height: 90px;
+            width: 90px;
+            position: relative;
+            transform: rotate(45deg);
+        }
+
+        .cross:before, .cross:after {
+            content: "";
+            position: absolute;
+            background-color: #000000;
+        }
+
+        .cross:before {
+            left: 50%;
+            width: 30%;
+            margin-left: -15%;
+            height: 100%;
+        }
+
+        .cross:after {
+            top: 50%;
+            height: 30%;
+            margin-top: -15%;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+<h1 class="header">TIC-TAC-TOE</h1>
+<div id="board"></div>
+<p id="info"></p>
+
+<!-- JavaScript code for game logic -->
+<script>
+    // Function to create the Tic-Tac-Toe board and handle game logic
+    function createBoard() {
+        // Selecting game board and informational text elements from the DOM
+        const board = document.querySelector("#board");
+        const info = document.querySelector("#info");
+
+        // Function to render individual squares on the board
+        function renderSquare(index, onClick) {
+            const squareElement = document.createElement("div");
+            squareElement.classList.add("square");
+            squareElement.id = index;
+            squareElement.addEventListener("click", onClick);
+            return squareElement;
+        }
+
+        // Function to add X or O to the squares array based on the current player's move
+        function addXO(squares, index) {
+            return squares.map((square, i) => (i === index ? getCurrentPlayer() : square));
+        }
+
+        // Function to determine the current player (X or O)
+        function getCurrentPlayer() {
+            return currentPlayer === "circle" ? "cross" : "circle";
+        }
+
+        // Initial game state: currentPlayer starts as "cross", and squares are all empty (null)
+        let currentPlayer = "cross";
+        let squares = Array(9).fill(null);
+
+        // Function to handle click events on squares, placing X or O based on the current player
+        function handleSquareClick(index) {
+            if (squares[index] === null) {
+                squares = addXO(squares, index);
+                currentPlayer = getCurrentPlayer();
+                info.textContent = `It is now ${currentPlayer}'s turn!`;
+                render();
+                score();
+            }
+        }
+
+        // Function to render the game board based on the current state of the squares array
+        function render() {
+            board.innerHTML = "";
+            squares.forEach((cell, index) => {
+                const squareElement = renderSquare(index, () => handleSquareClick(index));
+                if (cell) {
+                    const display = document.createElement("div");
+                    display.classList.add(cell);
+                    squareElement.appendChild(display);
+                }
+                board.appendChild(squareElement);
+            });
+        }
+
+        // Function to reset the board and switch player after a delay
+        function reset() {
+            setTimeout(() => {
+                squares = Array(9).fill(null);
+                currentPlayer = "cross";
+                render();
+                info.textContent = "Circle goes first";
+            }, 3000);
+        }
+
+        // Function to check the game state and handle wins, draws, and resets
+        function score() {
+            const allSquares = document.querySelectorAll(".square")
+
+            // Winning combinations on the Tic-Tac-Toe board
+            const winning = [[0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+
+            // Check for a draw
+            winning.forEach(array => {
+                let XODraw = Array.from(allSquares).every(square => square.firstChild !== null)
+                if (XODraw) {
+                    info.textContent = "Draw!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    reset();
+                }
+            })
+
+            // Check for wins
+            winning.forEach(array => {
+                let OWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("circle"))
+                let XWins = array.every(cell => allSquares[cell].firstChild?.classList.contains("cross"))
+
+                // Handle X's win
+                if (XWins) {
+                    info.textContent = "Cross Wins!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    reset();
+                }
+
+                // Handle O's win
+                if (OWins) {
+                    info.textContent = "Circle Wins!"
+                    allSquares.forEach(square => square.replaceWith(square.cloneNode(true)))
+                    reset()
+                }
+            })
+        }
+
+        render();
+    }
+
+    //Calls the initialize function
+    createBoard();
+</script>
+</body>
+</html>
